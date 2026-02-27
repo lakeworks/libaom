@@ -273,6 +273,15 @@ if(CONFIG_AV1_ENCODER)
                      "${AOM_ROOT}/aom_dsp/x86/sad_impl_avx2.c")
   endif()
 
+  # Native AVX-512 intrinsics (no Highway dependency)
+  list(APPEND AOM_DSP_ENCODER_INTRIN_AVX512
+              "${AOM_ROOT}/aom_dsp/x86/variance_avx512.c"
+              "${AOM_ROOT}/aom_dsp/x86/quantize_avx512.c")
+
+# Intrapred AVX-512 is common (used by both encoder and decoder)
+list(APPEND AOM_DSP_COMMON_INTRIN_AVX512
+            "${AOM_ROOT}/aom_dsp/x86/intrapred_avx512.c")
+
   list(APPEND AOM_DSP_ENCODER_INTRIN_AVX
               "${AOM_ROOT}/aom_dsp/x86/aom_quantize_avx.c")
 
@@ -495,10 +504,17 @@ function(setup_aom_dsp_targets)
     endif()
   endif()
 
-  if(HAVE_AVX512 AND CONFIG_AV1_ENCODER AND CONFIG_HIGHWAY)
-    add_intrinsics_object_library("-march=skylake-avx512" "avx512"
-                                  "aom_dsp_encoder"
-                                  "AOM_DSP_ENCODER_INTRIN_AVX512")
+  if(HAVE_AVX512)
+    if(AOM_DSP_COMMON_INTRIN_AVX512)
+      add_intrinsics_object_library("-march=skylake-avx512" "avx512"
+                                    "aom_dsp_common"
+                                    "AOM_DSP_COMMON_INTRIN_AVX512")
+    endif()
+    if(CONFIG_AV1_ENCODER AND AOM_DSP_ENCODER_INTRIN_AVX512)
+      add_intrinsics_object_library("-march=skylake-avx512" "avx512"
+                                    "aom_dsp_encoder"
+                                    "AOM_DSP_ENCODER_INTRIN_AVX512")
+    endif()
   endif()
 
   if(HAVE_NEON)

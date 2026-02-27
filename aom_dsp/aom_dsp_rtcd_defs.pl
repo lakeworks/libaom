@@ -100,7 +100,7 @@ specialize qw/aom_dc_top_predictor_32x16 neon sse2 avx2/;
 specialize qw/aom_dc_top_predictor_32x32 neon sse2 avx2/;
 specialize qw/aom_dc_top_predictor_32x64 neon sse2 avx2/;
 specialize qw/aom_dc_top_predictor_64x32 neon sse2 avx2/;
-specialize qw/aom_dc_top_predictor_64x64 neon sse2 avx2/;
+specialize qw/aom_dc_top_predictor_64x64 neon sse2 avx2 avx512/;
 
 specialize qw/aom_dc_left_predictor_4x4 neon sse2/;
 specialize qw/aom_dc_left_predictor_4x8 neon sse2/;
@@ -114,7 +114,7 @@ specialize qw/aom_dc_left_predictor_32x16 neon sse2 avx2/;
 specialize qw/aom_dc_left_predictor_32x32 neon sse2 avx2/;
 specialize qw/aom_dc_left_predictor_32x64 neon sse2 avx2/;
 specialize qw/aom_dc_left_predictor_64x32 neon sse2 avx2/;
-specialize qw/aom_dc_left_predictor_64x64 neon sse2 avx2/;
+specialize qw/aom_dc_left_predictor_64x64 neon sse2 avx2 avx512/;
 
 specialize qw/aom_dc_128_predictor_4x4 neon sse2/;
 specialize qw/aom_dc_128_predictor_4x8 neon sse2/;
@@ -127,8 +127,8 @@ specialize qw/aom_dc_128_predictor_16x32 neon sse2/;
 specialize qw/aom_dc_128_predictor_32x16 neon sse2 avx2/;
 specialize qw/aom_dc_128_predictor_32x32 neon sse2 avx2/;
 specialize qw/aom_dc_128_predictor_32x64 neon sse2 avx2/;
-specialize qw/aom_dc_128_predictor_64x32 neon sse2 avx2/;
-specialize qw/aom_dc_128_predictor_64x64 neon sse2 avx2/;
+specialize qw/aom_dc_128_predictor_64x32 neon sse2 avx2 avx512/;
+specialize qw/aom_dc_128_predictor_64x64 neon sse2 avx2 avx512/;
 
 specialize qw/aom_v_predictor_4x4 neon sse2/;
 specialize qw/aom_v_predictor_4x8 neon sse2/;
@@ -141,8 +141,8 @@ specialize qw/aom_v_predictor_16x32 neon sse2/;
 specialize qw/aom_v_predictor_32x16 neon sse2 avx2/;
 specialize qw/aom_v_predictor_32x32 neon sse2 avx2/;
 specialize qw/aom_v_predictor_32x64 neon sse2 avx2/;
-specialize qw/aom_v_predictor_64x32 neon sse2 avx2/;
-specialize qw/aom_v_predictor_64x64 neon sse2 avx2/;
+specialize qw/aom_v_predictor_64x32 neon sse2 avx2 avx512/;
+specialize qw/aom_v_predictor_64x64 neon sse2 avx2 avx512/;
 
 specialize qw/aom_h_predictor_4x4 neon sse2/;
 specialize qw/aom_h_predictor_4x8 neon sse2/;
@@ -155,8 +155,8 @@ specialize qw/aom_h_predictor_16x32 neon sse2/;
 specialize qw/aom_h_predictor_32x16 neon sse2/;
 specialize qw/aom_h_predictor_32x32 neon sse2 avx2/;
 specialize qw/aom_h_predictor_32x64 neon sse2/;
-specialize qw/aom_h_predictor_64x32 neon sse2/;
-specialize qw/aom_h_predictor_64x64 neon sse2/;
+specialize qw/aom_h_predictor_64x32 neon sse2 avx512/;
+specialize qw/aom_h_predictor_64x64 neon sse2 avx512/;
 
 specialize qw/aom_paeth_predictor_4x4 ssse3 neon/;
 specialize qw/aom_paeth_predictor_4x8 ssse3 neon/;
@@ -227,8 +227,8 @@ specialize qw/aom_dc_predictor_16x32 neon sse2/;
 specialize qw/aom_dc_predictor_32x16 neon sse2 avx2/;
 specialize qw/aom_dc_predictor_32x32 neon sse2 avx2/;
 specialize qw/aom_dc_predictor_32x64 neon sse2 avx2/;
-specialize qw/aom_dc_predictor_64x64 neon sse2 avx2/;
-specialize qw/aom_dc_predictor_64x32 neon sse2 avx2/;
+specialize qw/aom_dc_predictor_64x64 neon sse2 avx2 avx512/;
+specialize qw/aom_dc_predictor_64x32 neon sse2 avx2 avx512/;
 
 
 if ((aom_config("CONFIG_REALTIME_ONLY") ne "yes") || (aom_config("CONFIG_AV1_DECODER") eq "yes")) {
@@ -251,21 +251,21 @@ if ((aom_config("CONFIG_REALTIME_ONLY") ne "yes") || (aom_config("CONFIG_AV1_DEC
   specialize qw/aom_dc_128_predictor_16x4 neon sse2/;
   specialize qw/aom_dc_128_predictor_16x64 neon sse2/;
   specialize qw/aom_dc_128_predictor_32x8 neon sse2/;
-  specialize qw/aom_dc_128_predictor_64x16 neon sse2 avx2/;
+  specialize qw/aom_dc_128_predictor_64x16 neon sse2 avx2 avx512/;
 
   specialize qw/aom_v_predictor_4x16 neon sse2/;
   specialize qw/aom_v_predictor_8x32 neon sse2/;
   specialize qw/aom_v_predictor_16x4 neon sse2/;
   specialize qw/aom_v_predictor_16x64 neon sse2/;
   specialize qw/aom_v_predictor_32x8 neon sse2/;
-  specialize qw/aom_v_predictor_64x16 neon sse2 avx2/;
+  specialize qw/aom_v_predictor_64x16 neon sse2 avx2 avx512/;
 
   specialize qw/aom_h_predictor_4x16 neon sse2/;
   specialize qw/aom_h_predictor_8x32 neon sse2/;
   specialize qw/aom_h_predictor_16x4 neon sse2/;
   specialize qw/aom_h_predictor_16x64 neon sse2/;
   specialize qw/aom_h_predictor_32x8 neon sse2/;
-  specialize qw/aom_h_predictor_64x16 neon sse2/;
+  specialize qw/aom_h_predictor_64x16 neon sse2 avx512/;
 
   specialize qw/aom_paeth_predictor_4x16 ssse3 neon/;
   specialize qw/aom_paeth_predictor_8x32 ssse3 neon/;
@@ -300,7 +300,7 @@ if ((aom_config("CONFIG_REALTIME_ONLY") ne "yes") || (aom_config("CONFIG_AV1_DEC
   specialize qw/aom_dc_predictor_16x4 neon sse2/;
   specialize qw/aom_dc_predictor_16x64 neon sse2/;
   specialize qw/aom_dc_predictor_32x8 neon sse2/;
-  specialize qw/aom_dc_predictor_64x16 neon sse2 avx2/;
+  specialize qw/aom_dc_predictor_64x16 neon sse2 avx2 avx512/;
 }  # !CONFIG_REALTIME_ONLY || CONFIG_AV1_DECODER
 
 if (aom_config("CONFIG_AV1_HIGHBITDEPTH") eq "yes") {
@@ -729,13 +729,13 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes"){
 #
 if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   add_proto qw/void aom_quantize_b/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-  specialize qw/aom_quantize_b sse2 neon avx avx2/, "$ssse3_x86_64";
+  specialize qw/aom_quantize_b sse2 neon avx avx2 avx512/, "$ssse3_x86_64";
 
   add_proto qw/void aom_quantize_b_32x32/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-  specialize qw/aom_quantize_b_32x32 neon avx avx2/, "$ssse3_x86_64";
+  specialize qw/aom_quantize_b_32x32 neon avx avx2 avx512/, "$ssse3_x86_64";
 
   add_proto qw/void aom_quantize_b_64x64/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
-  specialize qw/aom_quantize_b_64x64 neon ssse3 avx2/;
+  specialize qw/aom_quantize_b_64x64 neon ssse3 avx2 avx512/;
 
   if (aom_config("CONFIG_REALTIME_ONLY") ne "yes") {
     add_proto qw/void aom_quantize_b_adaptive/, "const tran_low_t *coeff_ptr, intptr_t n_coeffs, const int16_t *zbin_ptr, const int16_t *round_ptr, const int16_t *quant_ptr, const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr, const int16_t *scan, const int16_t *iscan";
@@ -1389,11 +1389,11 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/uint32_t/, "aom_sub_pixel_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse";
     add_proto qw/uint32_t/, "aom_sub_pixel_avg_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
   }
-  specialize qw/aom_variance128x128   sse2 avx2 neon neon_dotprod/;
-  specialize qw/aom_variance128x64    sse2 avx2 neon neon_dotprod/;
-  specialize qw/aom_variance64x128    sse2 avx2 neon neon_dotprod/;
-  specialize qw/aom_variance64x64     sse2 avx2 neon neon_dotprod/;
-  specialize qw/aom_variance64x32     sse2 avx2 neon neon_dotprod/;
+  specialize qw/aom_variance128x128   sse2 avx2 avx512 neon neon_dotprod/;
+  specialize qw/aom_variance128x64    sse2 avx2 avx512 neon neon_dotprod/;
+  specialize qw/aom_variance64x128    sse2 avx2 avx512 neon neon_dotprod/;
+  specialize qw/aom_variance64x64     sse2 avx2 avx512 neon neon_dotprod/;
+  specialize qw/aom_variance64x32     sse2 avx2 avx512 neon neon_dotprod/;
   specialize qw/aom_variance32x64     sse2 avx2 neon neon_dotprod/;
   specialize qw/aom_variance32x32     sse2 avx2 neon neon_dotprod/;
   specialize qw/aom_variance32x16     sse2 avx2 neon neon_dotprod/;
@@ -1446,7 +1446,7 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     specialize qw/aom_variance8x32  neon neon_dotprod sse2/;
     specialize qw/aom_variance32x8  neon neon_dotprod sse2 avx2/;
     specialize qw/aom_variance16x64 neon neon_dotprod sse2 avx2/;
-    specialize qw/aom_variance64x16 neon neon_dotprod sse2 avx2/;
+    specialize qw/aom_variance64x16 neon neon_dotprod sse2 avx2 avx512/;
 
     specialize qw/aom_sub_pixel_variance4x16 neon ssse3/;
     specialize qw/aom_sub_pixel_variance16x4 neon avx2 ssse3/;
