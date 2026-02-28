@@ -93,7 +93,7 @@ static AOM_FORCE_INLINE __m512i quantize_b_logscale0_32(
   }
 
   // Mask-add round only where abs_coeff > zbin
-  const __m512i v_tmp_rnd = _mm512_maskz_add_epi16(
+  const __m512i v_tmp_rnd = _mm512_maskz_adds_epi16(
       v_zbin_mask, v_abs_coeff, *v_round);
 
   // Quantize: ((tmp * quant >> 16) + tmp) * quant_shift >> 16
@@ -138,7 +138,7 @@ static AOM_FORCE_INLINE __m512i quantize_b_logscale_32(
     return _mm512_setzero_si512();
   }
 
-  const __m512i v_tmp_rnd = _mm512_maskz_add_epi16(
+  const __m512i v_tmp_rnd = _mm512_maskz_adds_epi16(
       v_zbin_mask, v_abs_coeff, *v_round);
 
   const __m512i v_tmp32_a = _mm512_mulhi_epi16(v_tmp_rnd, *v_quant);
@@ -175,11 +175,18 @@ static AOM_FORCE_INLINE __m512i quantize_b_logscale_32(
 }
 
 // Track end-of-block position across 32 coefficients.
+// Permute iscan to match _mm512_packs_epi32 lane-crossing order:
+// packs interleaves per 128-bit lane: [a0-3,b0-3 | a4-7,b4-7 | ...]
+// so register position 4 = coeff[16], position 8 = coeff[4], etc.
+// The permutation {0,4,1,5,2,6,3,7} on 64-bit qwords maps linear iscan
+// to match the interleaved coefficient positions.
 static inline __m512i get_max_lane_eob_avx512(const int16_t *iscan,
                                                __m512i v_eobmax,
                                                __m512i v_mask) {
   const __m512i v_iscan = _mm512_loadu_si512((const __m512i *)iscan);
-  const __m512i v_iscan_plus1 = _mm512_sub_epi16(v_iscan, v_mask);
+  const __m512i perm_idx = _mm512_set_epi64(7, 3, 6, 2, 5, 1, 4, 0);
+  const __m512i v_iscan_perm = _mm512_permutexvar_epi64(perm_idx, v_iscan);
+  const __m512i v_iscan_plus1 = _mm512_sub_epi16(v_iscan_perm, v_mask);
   const __m512i v_nz_iscan = _mm512_and_si512(v_iscan_plus1, v_mask);
   return _mm512_max_epi16(v_eobmax, v_nz_iscan);
 }
