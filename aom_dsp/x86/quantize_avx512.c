@@ -17,10 +17,15 @@
 #include "config/aom_dsp_rtcd.h"
 #include "aom/aom_integer.h"
 
+// NOTE: 512-bit accesses here must stay UNALIGNED. The coefficient buffers
+// are allocated with aom_memalign(32, ...) in av1/encoder/context_tree.c,
+// which guarantees 32-byte alignment only; _mm512_load_si512 requires 64 and
+// faults (#GP) on a 32-mod-64 address. The AVX2 reference is safe only
+// because _mm256_load_si256 needs exactly the 32 bytes memalign provides.
 // Load 32 tran_low_t (int32) coefficients and pack to int16.
 static inline __m512i load_coefficients_avx512(const tran_low_t *coeff_ptr) {
-  const __m512i c0 = _mm512_load_si512((const __m512i *)coeff_ptr);
-  const __m512i c1 = _mm512_load_si512((const __m512i *)(coeff_ptr + 16));
+  const __m512i c0 = _mm512_loadu_si512((const __m512i *)coeff_ptr);
+  const __m512i c1 = _mm512_loadu_si512((const __m512i *)(coeff_ptr + 16));
   return _mm512_packs_epi32(c0, c1);
 }
 
@@ -30,8 +35,8 @@ static inline void store_coefficients_avx512(__m512i coeff_vals,
   const __m512i sign = _mm512_srai_epi16(coeff_vals, 15);
   const __m512i lo = _mm512_unpacklo_epi16(coeff_vals, sign);
   const __m512i hi = _mm512_unpackhi_epi16(coeff_vals, sign);
-  _mm512_store_si512((__m512i *)coeff_ptr, lo);
-  _mm512_store_si512((__m512i *)(coeff_ptr + 16), hi);
+  _mm512_storeu_si512((__m512i *)coeff_ptr, lo);
+  _mm512_storeu_si512((__m512i *)(coeff_ptr + 16), hi);
 }
 
 // Load quantization parameters into 512-bit registers.
@@ -85,10 +90,10 @@ static AOM_FORCE_INLINE __m512i quantize_b_logscale0_32(
   const __mmask32 v_zbin_mask = _mm512_cmpgt_epi16_mask(v_abs_coeff, *v_zbin);
 
   if (v_zbin_mask == 0) {
-    _mm512_store_si512((__m512i *)qcoeff_ptr, _mm512_setzero_si512());
-    _mm512_store_si512((__m512i *)(qcoeff_ptr + 16), _mm512_setzero_si512());
-    _mm512_store_si512((__m512i *)dqcoeff_ptr, _mm512_setzero_si512());
-    _mm512_store_si512((__m512i *)(dqcoeff_ptr + 16), _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)qcoeff_ptr, _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)(qcoeff_ptr + 16), _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)dqcoeff_ptr, _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)(dqcoeff_ptr + 16), _mm512_setzero_si512());
     return _mm512_setzero_si512();
   }
 
@@ -131,10 +136,10 @@ static AOM_FORCE_INLINE __m512i quantize_b_logscale_32(
   const __mmask32 v_zbin_mask = _mm512_cmpgt_epi16_mask(v_abs_coeff, *v_zbin);
 
   if (v_zbin_mask == 0) {
-    _mm512_store_si512((__m512i *)qcoeff_ptr, _mm512_setzero_si512());
-    _mm512_store_si512((__m512i *)(qcoeff_ptr + 16), _mm512_setzero_si512());
-    _mm512_store_si512((__m512i *)dqcoeff_ptr, _mm512_setzero_si512());
-    _mm512_store_si512((__m512i *)(dqcoeff_ptr + 16), _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)qcoeff_ptr, _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)(qcoeff_ptr + 16), _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)dqcoeff_ptr, _mm512_setzero_si512());
+    _mm512_storeu_si512((__m512i *)(dqcoeff_ptr + 16), _mm512_setzero_si512());
     return _mm512_setzero_si512();
   }
 
