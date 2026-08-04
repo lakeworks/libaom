@@ -220,6 +220,16 @@ void aom_quantize_b_avx512(const tran_low_t *coeff_ptr, intptr_t n_coeffs,
                             tran_low_t *qcoeff_ptr, tran_low_t *dqcoeff_ptr,
                             const int16_t *dequant_ptr, uint16_t *eob_ptr,
                             const int16_t *scan, const int16_t *iscan) {
+  // The vector prologue below unconditionally processes 32 coefficients.
+  // TX_4X4 has n_coeffs == 16 (av1_get_max_eob, blockd.h), which would
+  // overrun qcoeff/dqcoeff by 64 bytes. Defer sub-vector block sizes to the
+  // 256-bit implementation, whose prologue is 16 wide.
+  if (n_coeffs < 32) {
+    aom_quantize_b_avx2(coeff_ptr, n_coeffs, zbin_ptr, round_ptr, quant_ptr,
+                        quant_shift_ptr, qcoeff_ptr, dqcoeff_ptr, dequant_ptr,
+                        eob_ptr, scan, iscan);
+    return;
+  }
   (void)scan;
   __m512i v_zbin, v_round, v_quant, v_dequant, v_quant_shift;
   __m512i v_eobmax = _mm512_setzero_si512();
@@ -300,6 +310,13 @@ void aom_quantize_b_32x32_avx512(
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan, const int16_t *iscan) {
+  // See aom_quantize_b_avx512: the shared helper prologue is 32 wide.
+  if (n_coeffs < 32) {
+    aom_quantize_b_32x32_avx2(coeff_ptr, n_coeffs, zbin_ptr, round_ptr,
+                               quant_ptr, quant_shift_ptr, qcoeff_ptr,
+                               dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan);
+    return;
+  }
   (void)scan;
   quantize_b_no_qmatrix_avx512(coeff_ptr, n_coeffs, zbin_ptr, round_ptr,
                                 quant_ptr, quant_shift_ptr, qcoeff_ptr,
@@ -312,6 +329,13 @@ void aom_quantize_b_64x64_avx512(
     const int16_t *quant_shift_ptr, tran_low_t *qcoeff_ptr,
     tran_low_t *dqcoeff_ptr, const int16_t *dequant_ptr, uint16_t *eob_ptr,
     const int16_t *scan, const int16_t *iscan) {
+  // See aom_quantize_b_avx512: the shared helper prologue is 32 wide.
+  if (n_coeffs < 32) {
+    aom_quantize_b_64x64_avx2(coeff_ptr, n_coeffs, zbin_ptr, round_ptr,
+                               quant_ptr, quant_shift_ptr, qcoeff_ptr,
+                               dqcoeff_ptr, dequant_ptr, eob_ptr, scan, iscan);
+    return;
+  }
   (void)scan;
   quantize_b_no_qmatrix_avx512(coeff_ptr, n_coeffs, zbin_ptr, round_ptr,
                                 quant_ptr, quant_shift_ptr, qcoeff_ptr,
