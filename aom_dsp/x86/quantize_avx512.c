@@ -39,18 +39,35 @@ static inline void store_coefficients_avx512(__m512i coeff_vals,
   _mm512_storeu_si512((__m512i *)(coeff_ptr + 16), hi);
 }
 
+// Build a quantizer-parameter vector matching the packed coefficient layout.
+//
+// _mm512_packs_epi32 interleaves per 128-bit lane, so the int16 lane -> source
+// coefficient map is NOT linear:
+//   lanes  0-3 -> coeff[0..3]     lanes  4-7  -> coeff[16..19]
+//   lanes  8-11 -> coeff[4..7]    lanes 12-15 -> coeff[20..23]
+//   lanes 16-19 -> coeff[8..11]   lanes 20-23 -> coeff[24..27]
+//   lanes 24-27 -> coeff[12..15]  lanes 28-31 -> coeff[28..31]
+//
+// The only DC coefficient is coeff[0], at lane 0. Every other lane is AC.
+// param_ptr[0] is the DC value; param_ptr[1..7] are all the same AC value
+// (av1_build_quantizer replicates index 1 into 2..7), so a single AC
+// broadcast with DC blended into lane 0 is exact.
+//
+// Do NOT rebuild this by broadcasting a 256-bit pattern: _mm512_broadcast_i64x4
+// duplicates param_ptr[0] into lane 16, which is coeff[8] -- an AC coefficient.
+static inline __m512i dc_ac_param_vector_avx512(const int16_t *param_ptr) {
+  const __m512i ac = _mm512_set1_epi16(param_ptr[1]);
+  const __m512i dc = _mm512_set1_epi16(param_ptr[0]);
+  return _mm512_mask_blend_epi16((__mmask32)1, ac, dc);
+}
+
 // Load quantization parameters into 512-bit registers.
-// First 8 values have DC params, rest have AC params.
-// We replicate the AC half to fill 32 lanes.
 static inline void load_b_values_avx512(
     const int16_t *zbin_ptr, __m512i *zbin, const int16_t *round_ptr,
     __m512i *round, const int16_t *quant_ptr, __m512i *quant,
     const int16_t *dequant_ptr, __m512i *dequant, const int16_t *shift_ptr,
     __m512i *shift, int log_scale) {
-  // Load 8 int16 values (DC + 7 AC), broadcast the top half (AC) to fill
-  const __m256i z256 =
-      _mm256_castsi128_si256(_mm_load_si128((const __m128i *)zbin_ptr));
-  *zbin = _mm512_broadcast_i64x4(_mm256_permute4x64_epi64(z256, 0x54));
+  *zbin = dc_ac_param_vector_avx512(zbin_ptr);
   if (log_scale > 0) {
     const __m512i rnd = _mm512_set1_epi16((int16_t)(1 << (log_scale - 1)));
     *zbin = _mm512_add_epi16(*zbin, rnd);
@@ -58,26 +75,18 @@ static inline void load_b_values_avx512(
   }
   *zbin = _mm512_sub_epi16(*zbin, _mm512_set1_epi16(1));
 
-  const __m256i r256 =
-      _mm256_castsi128_si256(_mm_load_si128((const __m128i *)round_ptr));
-  *round = _mm512_broadcast_i64x4(_mm256_permute4x64_epi64(r256, 0x54));
+  *round = dc_ac_param_vector_avx512(round_ptr);
   if (log_scale > 0) {
     const __m512i rnd = _mm512_set1_epi16((int16_t)(1 << (log_scale - 1)));
     *round = _mm512_add_epi16(*round, rnd);
     *round = _mm512_srai_epi16(*round, log_scale);
   }
 
-  const __m256i q256 =
-      _mm256_castsi128_si256(_mm_load_si128((const __m128i *)quant_ptr));
-  *quant = _mm512_broadcast_i64x4(_mm256_permute4x64_epi64(q256, 0x54));
+  *quant = dc_ac_param_vector_avx512(quant_ptr);
 
-  const __m256i d256 =
-      _mm256_castsi128_si256(_mm_load_si128((const __m128i *)dequant_ptr));
-  *dequant = _mm512_broadcast_i64x4(_mm256_permute4x64_epi64(d256, 0x54));
+  *dequant = dc_ac_param_vector_avx512(dequant_ptr);
 
-  const __m256i s256 =
-      _mm256_castsi128_si256(_mm_load_si128((const __m128i *)shift_ptr));
-  *shift = _mm512_broadcast_i64x4(_mm256_permute4x64_epi64(s256, 0x54));
+  *shift = dc_ac_param_vector_avx512(shift_ptr);
 }
 
 // Quantize 32 coefficients at log_scale=0.
